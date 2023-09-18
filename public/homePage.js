@@ -21,39 +21,20 @@ ApiConnector.current((response) => {
 });
 
 // Обновление курса валют
-
 const ratesBoard = new RatesBoard();
 
-function exchangeRateUpdate(response) {
-	if (response.success) {
-		ratesBoard.clearTable();
-		ratesBoard.fillTable(response.data);
-	}
+function exchangeRateUpdate() {
+	ApiConnector.getStocks((response) => {
+		if (response.success) {
+			ratesBoard.clearTable();
+			ratesBoard.fillTable(response.data);
+		}
+	});
 };
 
-function debounceDecoratorNew(func, delay) {
-	let timeoutId = null;
-	let isThrottled = false;
-	return function(...args) {
-		if (!isThrottled) {
-			isThrottled = true;
-			func(...args);
-		}
-		if (timeoutId) {
-			clearTimeout(timeoutId);
-		}
-		timeoutId = setTimeout(() => {
-			timeoutId = null;
-			func(...args);
-		}, delay);
-	}
-}
+exchangeRateUpdate();
 
-const debouncedExchangeRateUpdate = debounceDecoratorNew(exchangeRateUpdate, 60000);
-
-ApiConnector.getStocks((response) => {
-	debouncedExchangeRateUpdate(response);
-});
+setInterval(() => exchangeRateUpdate(), 60000);
 
 // Операции с деньгами
 // Пополнение
@@ -115,7 +96,7 @@ favoritesWidget.addUserCallback = (data) => {
 			favoritesWidget.fillTable(response.data);
 			moneyManager.updateUsersList(response.data);
 		} else {
-			moneyManager.setMessage(response.success, response.error);
+			favoritesWidget.setMessage(response.success, response.error);
 		}
 	});
 };
@@ -128,7 +109,7 @@ favoritesWidget.removeUserCallback = (data) => {
 			favoritesWidget.fillTable(response.data);
 			moneyManager.updateUsersList(response.data);
 		} else {
-			moneyManager.setMessage(response.success, response.error);
+			favoritesWidget.setMessage(response.success, response.error);
 		}
 	});
 };
